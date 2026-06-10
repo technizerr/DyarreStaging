@@ -27,6 +27,7 @@ interface DbPropertyRow {
   developer: string | null;
   created_at: string;
   expiry_date: string | null;
+  listing_permit: string | null;
 }
 
 export interface DbProperty extends Property {
@@ -62,6 +63,7 @@ function mapRow(row: DbPropertyRow, images: string[]): DbProperty {
     features: row.features ?? [],
     developer: row.developer,
     expiryDate: row.expiry_date,
+    listing_permit: row.listing_permit ?? undefined,
     createdAt: row.created_at,
   };
 }

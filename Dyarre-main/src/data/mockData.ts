@@ -63,6 +63,7 @@ export interface Property {
   images: string[];
   features: string[];
   createdAt: string;
+  listing_permit?: string;
 }
 
 export const properties: Property[] = [
