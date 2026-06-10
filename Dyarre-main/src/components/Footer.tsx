@@ -72,6 +72,9 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t border-primary-foreground/10 text-center">
           <p className="text-xs opacity-50">© {new Date().getFullYear()} {t.footer.copyright}</p>
+          <p className="text-xs opacity-50 mt-2">
+            Licensed by Abu Dhabi Department of Municipalities and Transport (DMT) — Broker Licence No. 202601013914
+          </p>
         </div>
       </div>
     </footer>
