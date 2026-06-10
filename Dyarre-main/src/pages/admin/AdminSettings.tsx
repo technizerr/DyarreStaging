@@ -506,11 +506,12 @@ function SettingsInput({ label, value, onChange, type = "text", placeholder, ico
 function LogosCard() {
   const [logos, setLogos] = useState({ logo_light_bg_url: "", logo_dark_bg_url: "" });
   const [uploading, setUploading] = useState<null | "light" | "dark">(null);
+  const storageBase = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public`;
   const DEFAULTS = {
     logo_light_bg_url:
-      "https://iltsthcthnsdclzvbbya.supabase.co/storage/v1/object/public/property-images/branding/logo-light-bg-default.png",
+      `${storageBase}/property-images/branding/logo-light-bg-default.png`,
     logo_dark_bg_url:
-      "https://iltsthcthnsdclzvbbya.supabase.co/storage/v1/object/public/property-images/branding/logo-dark-bg-default.png",
+      `${storageBase}/property-images/branding/logo-dark-bg-default.png`,
   };
 
   useEffect(() => {
