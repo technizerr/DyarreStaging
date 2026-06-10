@@ -8,9 +8,9 @@ export interface BrandingLogos {
 
 export const DEFAULT_LOGOS: BrandingLogos = {
   logo_light_bg_url:
-    "https://iltsthcthnsdclzvbbya.supabase.co/storage/v1/object/public/property-images/branding/logo-light-bg-default.png",
+    `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/property-images/branding/logo-light-bg-default.png`,
   logo_dark_bg_url:
-    "https://iltsthcthnsdclzvbbya.supabase.co/storage/v1/object/public/property-images/branding/logo-dark-bg-default.png",
+    `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/property-images/branding/logo-dark-bg-default.png`,
 };
 
 let cached: BrandingLogos | null = null;
