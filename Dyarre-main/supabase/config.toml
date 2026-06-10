@@ -1,0 +1,13 @@
+project_id = "iltsthcthnsdclzvbbya"
+
+[functions.bot-create-property]
+verify_jwt = false
+
+[functions.bot-upload-image]
+verify_jwt = false
+
+[functions.bot-list-options]
+verify_jwt = false
+
+[functions.telegram-webhook]
+verify_jwt = false
