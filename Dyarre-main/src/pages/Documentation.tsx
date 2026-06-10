@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 
 export default function Documentation() {
+  const functionsBase = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+
   return (
     <AdminLayout>
       <SEO
@@ -106,7 +108,7 @@ supabase/functions/     Edge Functions (bot-*, telegram-webhook, …)`}</pre>
             {/* AI AUTOMATION */}
             <DocSection icon={<Bot />} title="AI Automation API (Agents · n8n · Telegram)">
               <p>Four public Edge Functions enable any external automation (custom AI agent, n8n, Make, Zapier, or the built-in Telegram bot) to create and publish properties. All require the header <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">x-api-key: &lt;BOT_API_KEY&gt;</code> stored in Cloud secrets.</p>
-              <p className="mt-2">Base URL: <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">https://iltsthcthnsdclzvbbya.supabase.co/functions/v1</code></p>
+              <p className="mt-2">Base URL: <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">{functionsBase}</code></p>
 
               <h4 className="font-semibold mt-4 mb-2">POST /bot-create-property</h4>
               <p>Creates and publishes a property. Optional <code>image_urls[]</code> are downloaded, watermarked, and attached.</p>
