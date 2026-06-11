@@ -74,6 +74,8 @@ export function Footer() {
           <p className="text-xs opacity-50">© {new Date().getFullYear()} {t.footer.copyright}</p>
           <p className="text-xs opacity-50 mt-2">
             Licensed by Abu Dhabi Department of Municipalities and Transport (DMT) — Broker Licence No. 202601013914
+            <br />
+            <span dir="rtl">مرخّصة من دائرة البلديات والنقل في أبوظبي — رقم رخصة الوسيط: 202601013914</span>
           </p>
         </div>
       </div>

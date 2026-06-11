@@ -140,14 +140,12 @@ export default function PropertyDetailsPage() {
               </ScrollReveal>
               <ScrollReveal>
                 <div className="flex flex-col gap-1">
-                  {property.listing_permit && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
-                      <span className="font-medium">Listing Permit:</span>
-                      <span>{property.listing_permit}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
+                    <span className="font-medium">Listing Permit / تصريح الإدراج:</span>
+                    <span>{property.listing_permit || 'Pending / قيد الإجراء'}</span>
+                  </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                    <span>Broker Licence: 202601013914</span>
+                    <span>Broker Licence / رخصة الوسيط: 202601013914</span>
                   </div>
                 </div>
               </ScrollReveal>
