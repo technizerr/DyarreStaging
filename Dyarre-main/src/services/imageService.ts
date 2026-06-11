@@ -38,9 +38,18 @@ export async function listTrash(): Promise<unknown[]> {
   return res.json()
 }
 
-export async function getAuditLog(page = 1): Promise<unknown[]> {
-  const res = await fetch(`${API}/api/images/audit-log?page=${page}`, {
+export async function getAuditLog(page = 1, action?: string): Promise<unknown[]> {
+  const params = new URLSearchParams({ page: String(page) })
+  if (action && action !== 'all') params.set('action', action)
+  const res = await fetch(`${API}/api/images/audit-log?${params}`, {
     headers: { Authorization: `Bearer ${token()}` },
   })
   return res.json()
+}
+
+export async function hardDeleteImage(id: string): Promise<void> {
+  await fetch(`${API}/api/images/${encodeURIComponent(id)}/hard-delete`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token()}` },
+  })
 }
