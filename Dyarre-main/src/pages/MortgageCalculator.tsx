@@ -141,6 +141,12 @@ export default function MortgageCalculatorPage() {
                     <ResultRow label={mt.totalPayment} value={fmt(result.totalPayment)} />
                   </div>
                 </div>
+
+                <p className="text-xs text-muted-foreground mt-4 border-t pt-3">
+                  All calculations are indicative only and do not constitute financial advice.
+                  Actual mortgage terms are subject to lender approval and prevailing interest rates.
+                  Consult a licensed financial advisor before making any investment decision.
+                </p>
               </div>
             </ScrollReveal>
           </div>
