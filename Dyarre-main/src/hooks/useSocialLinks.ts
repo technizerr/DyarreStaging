@@ -1,34 +1,27 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from 'react'
+import { getPublicSetting } from '@/services/settingsService'
 
 export interface SocialLinks {
-  instagram?: string;
-  tiktok?: string;
-  facebook?: string;
-  twitter?: string;
-  linkedin?: string;
-  youtube?: string;
+  instagram?: string
+  tiktok?: string
+  facebook?: string
+  twitter?: string
+  linkedin?: string
+  youtube?: string
 }
 
 export function useSocialLinks() {
-  const [links, setLinks] = useState<SocialLinks>({});
-  const [loading, setLoading] = useState(true);
+  const [links, setLinks] = useState<SocialLinks>({})
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase
-      .from("site_settings")
-      .select("value")
-      .eq("key", "social_media")
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data?.value && typeof data.value === "object") {
-          setLinks(data.value as SocialLinks);
-        }
-        setLoading(false);
-      });
-  }, []);
+    getPublicSetting('social_media').then(v => {
+      if (v && typeof v === 'object') setLinks(v as SocialLinks)
+      setLoading(false)
+    })
+  }, [])
 
-  const activeLinks = Object.entries(links).filter(([, url]) => url && url.trim() !== "");
+  const activeLinks = Object.entries(links).filter(([, url]) => url && url.trim() !== '')
 
-  return { links, activeLinks, loading };
+  return { links, activeLinks, loading }
 }
