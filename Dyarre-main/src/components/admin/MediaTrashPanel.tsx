@@ -1,83 +1,66 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { Trash2, Undo2, RefreshCw } from "lucide-react";
-import { logMediaAction } from "@/utils/mediaAudit";
+import { useEffect, useState } from 'react'
+import { restoreImage, hardDeleteImage, listTrash } from '@/services/imageService'
+import { toast } from 'sonner'
+import { Trash2, Undo2, RefreshCw } from 'lucide-react'
 
 interface TrashImage {
-  id: string;
-  image_url: string;
-  property_id: string;
-  deleted_at: string;
-  original_path: string | null;
+  id: string
+  image_url: string
+  property_id: string
+  deleted_at: string
+  original_path: string | null
 }
 
 interface Props {
-  /** If provided, restrict trash view to one property. */
-  propertyId?: string;
-  /** Called when trash items change (restore/purge). */
-  onChange?: () => void;
+  propertyId?: string
+  onChange?: () => void
 }
 
 export function MediaTrashPanel({ propertyId, onChange }: Props) {
-  const [items, setItems] = useState<TrashImage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<TrashImage[]>([])
+  const [loading, setLoading] = useState(true)
 
   const load = async () => {
-    setLoading(true);
-    let q = supabase
-      .from("property_images")
-      .select("id, image_url, property_id, deleted_at, original_path")
-      .not("deleted_at", "is", null)
-      .order("deleted_at", { ascending: false });
-    if (propertyId) q = q.eq("property_id", propertyId);
-    const { data, error } = await q;
-    if (error) toast.error(error.message);
-    setItems((data as TrashImage[]) || []);
-    setLoading(false);
-  };
+    setLoading(true)
+    try {
+      const all = (await listTrash()) as TrashImage[]
+      setItems(propertyId ? all.filter(i => i.property_id === propertyId) : all)
+    } catch {
+      toast.error('Failed to load trash')
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  useEffect(() => { load(); }, [propertyId]);
+  useEffect(() => { load() }, [propertyId])
 
   const restore = async (img: TrashImage) => {
-    const { error } = await supabase.from("property_images").update({ deleted_at: null }).eq("id", img.id);
-    if (error) toast.error(error.message);
-    else {
-      await logMediaAction({
-        action: "restore",
-        property_id: img.property_id,
-        image_id: img.id,
-        bucket: "property-images",
-        path: img.image_url.split("/property-images/")[1],
-      });
-      toast.success("Image restored"); load(); onChange?.();
+    try {
+      await restoreImage(img.id)
+      toast.success('Image restored')
+      load()
+      onChange?.()
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to restore image')
     }
-  };
+  }
 
   const hardDelete = async (img: TrashImage) => {
-    if (!confirm("Permanently delete this image? This cannot be undone.")) return;
-    const pub = img.image_url.split("/property-images/")[1];
-    if (pub) await supabase.storage.from("property-images").remove([decodeURIComponent(pub)]);
-    if (img.original_path) await supabase.storage.from("property-originals").remove([img.original_path]);
-    const { error } = await supabase.from("property_images").delete().eq("id", img.id);
-    if (error) toast.error(error.message);
-    else {
-      await logMediaAction({
-        action: "hard_delete",
-        property_id: img.property_id,
-        image_id: img.id,
-        bucket: "property-images",
-        path: pub,
-        details: { original_path: img.original_path },
-      });
-      toast.success("Permanently deleted"); load(); onChange?.();
+    if (!confirm('Permanently delete this image? This cannot be undone.')) return
+    try {
+      await hardDeleteImage(img.id)
+      toast.success('Permanently deleted')
+      load()
+      onChange?.()
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to delete image')
     }
-  };
+  }
 
   const daysLeft = (deletedAt: string) => {
-    const expires = new Date(deletedAt).getTime() + 30 * 86400000;
-    return Math.max(0, Math.ceil((expires - Date.now()) / 86400000));
-  };
+    const expires = new Date(deletedAt).getTime() + 30 * 86400000
+    return Math.max(0, Math.ceil((expires - Date.now()) / 86400000))
+  }
 
   return (
     <div className="space-y-3">
@@ -95,7 +78,7 @@ export function MediaTrashPanel({ propertyId, onChange }: Props) {
         <p className="text-sm text-muted-foreground p-4 bg-secondary rounded-md">Trash is empty.</p>
       ) : (
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-          {items.map((img) => (
+          {items.map(img => (
             <div key={img.id} className="relative group aspect-square rounded-md overflow-hidden border border-border">
               <img src={img.image_url} alt="" className="w-full h-full object-cover opacity-60" />
               <div className="absolute inset-0 bg-foreground/40 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-2">
@@ -114,5 +97,5 @@ export function MediaTrashPanel({ propertyId, onChange }: Props) {
         </div>
       )}
     </div>
-  );
+  )
 }

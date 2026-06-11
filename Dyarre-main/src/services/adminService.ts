@@ -17,11 +17,11 @@ export async function listUsers(): Promise<AdminUser[]> {
   return res.json()
 }
 
-export async function createUser(email: string, password: string, displayName?: string): Promise<AdminUser> {
+export async function createUser(email: string, password: string, displayName?: string, role?: string): Promise<AdminUser> {
   const res = await fetch(`${API}/api/admin/users`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
-    body: JSON.stringify({ email, password, displayName }),
+    body: JSON.stringify({ email, password, displayName, role }),
   })
   if (!res.ok) throw new Error((await res.json()).error ?? 'Create user failed')
   return res.json()

@@ -1,44 +1,32 @@
-import { useState, useEffect, useCallback } from "react";
-import { AdminLayout } from "./AdminLayout";
-import { UserPlus, Trash2, Shield, RefreshCw } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  createdAt: string;
-}
+import { useState, useEffect, useCallback } from 'react'
+import { AdminLayout } from './AdminLayout'
+import { UserPlus, Trash2, Shield, RefreshCw } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
+import { listUsers, createUser, deleteUser, updateUserRole, type AdminUser } from '@/services/adminService'
+import { toast } from 'sonner'
 
 export default function UserManagement() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState({ name: "", email: "", role: "user", password: "" });
-  const { isAdmin, user: currentUser } = useAuth();
+  const [users, setUsers] = useState<AdminUser[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [formData, setFormData] = useState({ name: '', email: '', role: 'user', password: '' })
+  const { isAdmin, user: currentUser } = useAuth()
 
   const fetchUsers = useCallback(async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const { data, error } = await supabase.functions.invoke("admin-users", {
-        body: { action: "list" },
-      });
-      if (error) throw error;
-      setUsers(data.users || []);
-    } catch (err: any) {
-      toast.error("Failed to load users");
+      setUsers(await listUsers())
+    } catch {
+      toast.error('Failed to load users')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
-    if (isAdmin) fetchUsers();
-  }, [isAdmin, fetchUsers]);
+    if (isAdmin) fetchUsers()
+  }, [isAdmin, fetchUsers])
 
   if (!isAdmin) {
     return (
@@ -51,63 +39,45 @@ export default function UserManagement() {
           </div>
         </div>
       </AdminLayout>
-    );
+    )
   }
 
   const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
+    e.preventDefault()
+    setSubmitting(true)
     try {
-      const { data, error } = await supabase.functions.invoke("admin-users", {
-        body: {
-          action: "create",
-          email: formData.email,
-          password: formData.password,
-          displayName: formData.name,
-          role: formData.role,
-        },
-      });
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
-      toast.success(`User ${formData.email} created successfully`);
-      setShowForm(false);
-      setFormData({ name: "", email: "", role: "user", password: "" });
-      fetchUsers();
+      await createUser(formData.email, formData.password, formData.name, formData.role)
+      toast.success(`User ${formData.email} created successfully`)
+      setShowForm(false)
+      setFormData({ name: '', email: '', role: 'user', password: '' })
+      fetchUsers()
     } catch (err: any) {
-      toast.error(err.message || "Failed to create user");
+      toast.error(err.message || 'Failed to create user')
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
-  };
+  }
 
-  const deleteUser = async (userId: string) => {
-    if (!confirm("Are you sure you want to delete this user? This cannot be undone.")) return;
+  const handleDelete = async (userId: string) => {
+    if (!confirm('Are you sure you want to delete this user? This cannot be undone.')) return
     try {
-      const { data, error } = await supabase.functions.invoke("admin-users", {
-        body: { action: "delete", userId },
-      });
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
-      toast.success("User deleted");
-      fetchUsers();
+      await deleteUser(userId)
+      toast.success('User deleted')
+      fetchUsers()
     } catch (err: any) {
-      toast.error(err.message || "Failed to delete user");
+      toast.error(err.message || 'Failed to delete user')
     }
-  };
+  }
 
-  const updateRole = async (userId: string, newRole: string) => {
+  const handleRoleChange = async (userId: string, newRole: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke("admin-users", {
-        body: { action: "update_role", userId, role: newRole },
-      });
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
-      toast.success("Role updated");
-      fetchUsers();
+      await updateUserRole(userId, newRole as 'admin' | 'moderator' | 'user')
+      toast.success('Role updated')
+      fetchUsers()
     } catch (err: any) {
-      toast.error(err.message || "Failed to update role");
+      toast.error(err.message || 'Failed to update role')
     }
-  };
+  }
 
   return (
     <AdminLayout>
@@ -119,7 +89,7 @@ export default function UserManagement() {
           </div>
           <div className="flex items-center gap-2">
             <button onClick={fetchUsers} disabled={loading} className="p-2.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary">
-              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
             <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:opacity-90 active:scale-[0.97]">
               <UserPlus className="w-4 h-4" /> Add User
@@ -133,19 +103,19 @@ export default function UserManagement() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider block mb-2">Display Name</label>
-                <input type="text" required value={formData.name} onChange={(e) => setFormData((f) => ({ ...f, name: e.target.value }))} className="w-full px-4 py-2.5 text-sm rounded-md bg-secondary border-0 focus:ring-2 focus:ring-accent/40 outline-none" />
+                <input type="text" required value={formData.name} onChange={(e) => setFormData(f => ({ ...f, name: e.target.value }))} className="w-full px-4 py-2.5 text-sm rounded-md bg-secondary border-0 focus:ring-2 focus:ring-accent/40 outline-none" />
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider block mb-2">Email</label>
-                <input type="email" required value={formData.email} onChange={(e) => setFormData((f) => ({ ...f, email: e.target.value }))} className="w-full px-4 py-2.5 text-sm rounded-md bg-secondary border-0 focus:ring-2 focus:ring-accent/40 outline-none" />
+                <input type="email" required value={formData.email} onChange={(e) => setFormData(f => ({ ...f, email: e.target.value }))} className="w-full px-4 py-2.5 text-sm rounded-md bg-secondary border-0 focus:ring-2 focus:ring-accent/40 outline-none" />
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider block mb-2">Password</label>
-                <input type="password" required minLength={6} value={formData.password} onChange={(e) => setFormData((f) => ({ ...f, password: e.target.value }))} className="w-full px-4 py-2.5 text-sm rounded-md bg-secondary border-0 focus:ring-2 focus:ring-accent/40 outline-none" />
+                <input type="password" required minLength={6} value={formData.password} onChange={(e) => setFormData(f => ({ ...f, password: e.target.value }))} className="w-full px-4 py-2.5 text-sm rounded-md bg-secondary border-0 focus:ring-2 focus:ring-accent/40 outline-none" />
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider block mb-2">Role</label>
-                <select value={formData.role} onChange={(e) => setFormData((f) => ({ ...f, role: e.target.value }))} className="w-full px-4 py-2.5 text-sm rounded-md bg-secondary border-0 focus:ring-2 focus:ring-accent/40 outline-none">
+                <select value={formData.role} onChange={(e) => setFormData(f => ({ ...f, role: e.target.value }))} className="w-full px-4 py-2.5 text-sm rounded-md bg-secondary border-0 focus:ring-2 focus:ring-accent/40 outline-none">
                   <option value="admin">Admin</option>
                   <option value="moderator">Moderator</option>
                   <option value="user">User</option>
@@ -155,7 +125,7 @@ export default function UserManagement() {
             <div className="flex gap-3">
               <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2.5 text-sm border border-border rounded-md">Cancel</button>
               <button type="submit" disabled={submitting} className="px-4 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-md disabled:opacity-50">
-                {submitting ? "Creating…" : "Create User"}
+                {submitting ? 'Creating…' : 'Create User'}
               </button>
             </div>
           </form>
@@ -178,14 +148,14 @@ export default function UserManagement() {
                 </tr>
               </thead>
               <tbody>
-                {users.map((u) => (
+                {users.map(u => (
                   <tr key={u.id} className="border-b border-border/50">
-                    <td className="p-4 font-medium text-foreground">{u.name}</td>
+                    <td className="p-4 font-medium text-foreground">{u.displayName ?? '—'}</td>
                     <td className="p-4 text-muted-foreground">{u.email}</td>
                     <td className="p-4">
                       <select
                         value={u.role}
-                        onChange={(e) => updateRole(u.id, e.target.value)}
+                        onChange={(e) => handleRoleChange(u.id, e.target.value)}
                         disabled={u.id === currentUser?.id}
                         className="px-2 py-0.5 text-xs rounded bg-secondary border-0 outline-none disabled:opacity-50"
                       >
@@ -197,7 +167,7 @@ export default function UserManagement() {
                     <td className="p-4 text-muted-foreground">{new Date(u.createdAt).toLocaleDateString()}</td>
                     <td className="p-4">
                       {u.id !== currentUser?.id && (
-                        <button onClick={() => deleteUser(u.id)} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
+                        <button onClick={() => handleDelete(u.id)} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       )}
@@ -215,5 +185,5 @@ export default function UserManagement() {
         )}
       </div>
     </AdminLayout>
-  );
+  )
 }
